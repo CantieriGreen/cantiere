@@ -55,24 +55,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true
 
-    supabase.auth.getSession().then(async ({ data }) => {
+    // Prima lettura della sessione: sblocca subito l'app, il profilo si carica
+    // in background (non blocchiamo il loading sulla query del profilo).
+    supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return
       setSession(data.session)
-      if (data.session?.user) await loadProfile(data.session.user.id)
+      if (data.session?.user) void loadProfile(data.session.user.id)
       setLoading(false)
     })
 
-    const { data: sub } = supabase.auth.onAuthStateChange(
-      async (_event, newSession) => {
-        if (!mounted) return
-        setSession(newSession)
-        if (newSession?.user) {
-          await loadProfile(newSession.user.id)
-        } else {
-          setProfile(null)
-        }
+    // IMPORTANTE: il callback di onAuthStateChange deve restare sincrono e NON
+    // deve attendere altre chiamate Supabase al suo interno (rischio di deadlock
+    // sul lock interno di gotrue). Il profilo viene caricato fuori dal callback.
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      if (!mounted) return
+      setSession(newSession)
+      if (newSession?.user) {
+        setTimeout(() => {
+          if (mounted) void loadProfile(newSession.user.id)
+        }, 0)
+      } else {
+        setProfile(null)
       }
-    )
+      setLoading(false)
+    })
 
     return () => {
       mounted = false

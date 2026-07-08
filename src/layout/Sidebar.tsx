@@ -77,7 +77,7 @@ export function Sidebar() {
           </div>
           <div>
             <div className="font-semibold text-ink leading-none tracking-tight">
-              EdilControl
+              Tecnoimpianti
             </div>
             <div className="text-[11px] text-ink-soft mt-1">
               Gestionale cantieri

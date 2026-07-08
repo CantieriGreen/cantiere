@@ -38,7 +38,7 @@ export function Login() {
           </div>
           <div>
             <div className="text-[20px] font-semibold text-ink tracking-tight leading-none">
-              EdilControl
+              Tecnoimpianti
             </div>
             <div className="text-xs text-ink-soft mt-1">Gestionale cantieri</div>
           </div>
@@ -112,7 +112,7 @@ export function Login() {
         </div>
 
         <p className="text-center text-xs text-ink-faint mt-6">
-          © {new Date().getFullYear()} EdilControl · Sviluppato con cura
+          © {new Date().getFullYear()} Tecnoimpianti · Sviluppato con cura
         </p>
       </div>
     </div>
