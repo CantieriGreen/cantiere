@@ -112,7 +112,7 @@ export function Login() {
         </div>
 
         <p className="text-center text-xs text-ink-faint mt-6">
-          © {new Date().getFullYear()} Tecnoimpianti · Sviluppato con cura
+          © {new Date().getFullYear()} Tecnoimpianti
         </p>
       </div>
     </div>
