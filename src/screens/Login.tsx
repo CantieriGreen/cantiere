@@ -102,7 +102,7 @@ export function Login() {
             <p className="text-xs text-ink-soft">
               Problemi ad accedere?{' '}
               <a
-                href="mailto:supporto@edilcontrol.it?subject=Problema%20accesso%20EdilControl"
+                href="mailto:support@greenconsulting.it?subject=Problema%20accesso%20Tecnoimpianti"
                 className="text-navy-700 font-medium hover:underline"
               >
                 Contatta il supporto

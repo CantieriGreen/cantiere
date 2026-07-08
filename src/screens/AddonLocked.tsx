@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Icon } from '@/components/ui/Icon'
 
-const SUPPORT_MAIL = 'supporto@edilcontrol.it'
+const SUPPORT_MAIL = 'support@greenconsulting.it'
 
 type Props = {
   nome: string

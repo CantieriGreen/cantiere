@@ -39,7 +39,7 @@ const NAV: NavItem[] = [
   { id: 'impostazioni', label: 'Impostazioni', icon: 'settings', to: '/impostazioni' },
 ]
 
-const SUPPORT_MAIL = 'supporto@edilcontrol.it'
+const SUPPORT_MAIL = 'support@greenconsulting.it'
 
 const RUOLO_LABEL: Record<string, string> = {
   admin: 'Amministratore',
@@ -202,7 +202,7 @@ export function Sidebar() {
       {/* Bottom */}
       <div className="border-t border-line p-3 space-y-1">
         <a
-          href={`mailto:${SUPPORT_MAIL}?subject=Richiesta%20assistenza%20EdilControl`}
+          href={`mailto:${SUPPORT_MAIL}?subject=Richiesta%20assistenza%20Tecnoimpianti`}
           className="w-full flex items-center gap-2.5 px-2.5 h-9 rounded-md text-[13.5px] text-ink-soft hover:text-ink hover:bg-line-soft"
         >
           <Icon name="life-buoy" size={16} />
