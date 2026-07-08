@@ -86,16 +86,15 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* User box */}
+      {/* User box (etichetta identità; il menu account è nell'header in alto a destra) */}
       <div className="px-3 pt-3 pb-2">
-        <button className="w-full flex items-center gap-2.5 p-2 rounded-lg hover:bg-line-soft text-left">
+        <div className="w-full flex items-center gap-2.5 p-2 rounded-lg">
           <Avatar name={nome} size={32} />
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium text-ink truncate">{nome}</div>
             <div className="text-[11px] text-ink-soft truncate">{ruoloLabel}</div>
           </div>
-          <Icon name="chevron-down" size={14} className="text-ink-faint" />
-        </button>
+        </div>
       </div>
 
       {/* Nav */}
