@@ -27,13 +27,13 @@ export function useFicInbox() {
   })
 }
 
-/** Lancia la sincronizzazione via Edge Function (solo admin). */
+/** Lancia la sincronizzazione via Edge Function (solo admin). `mesi` = periodo da importare. */
 export function useFicSync() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (): Promise<SyncResult> => {
+    mutationFn: async (mesi: number = 12): Promise<SyncResult> => {
       const { data, error } = await supabase.functions.invoke('fic-sync', {
-        body: {},
+        body: { mesi },
       })
       // L'Edge Function ritorna errori applicativi nel corpo con status != 2xx:
       // supabase-js mette il messaggio in error.context

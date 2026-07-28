@@ -16,7 +16,7 @@ import type { StatoRicavo } from '@/lib/types'
 import { useRicavi, useDeleteRicavo, type RicavoConDettagli } from './api'
 import { RicavoForm } from './RicavoForm'
 import { FicInbox } from './FicInbox'
-import { useFicSync } from './fic-api'
+import { SyncFattureButton } from './SyncFattureButton'
 import { STATO_RICAVO, TIPO_RICAVO_LABEL } from './constants'
 
 type Filtro = 'tutti' | StatoRicavo
@@ -27,23 +27,11 @@ export function RicaviList() {
   const isAdmin = profile?.ruolo === 'admin'
   const { data: ricavi = [], isLoading, isError, error } = useRicavi()
   const deleteM = useDeleteRicavo()
-  const syncM = useFicSync()
 
   const [filtro, setFiltro] = useState<Filtro>('tutti')
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<RicavoConDettagli | null>(null)
   const [toDelete, setToDelete] = useState<RicavoConDettagli | null>(null)
-
-  const sincronizza = async () => {
-    try {
-      const r = await syncM.mutateAsync()
-      toast.success(
-        `Sincronizzate · attive ${r.attive.importate} nuove, passive ${r.passive.importate} nuove`
-      )
-    } catch (e) {
-      toast.error('Errore: ' + (e instanceof Error ? e.message : 'sconosciuto'))
-    }
-  }
 
   const sumByStato = (s: StatoRicavo) =>
     ricavi.filter((r) => r.stato === s).reduce((acc, r) => acc + r.importo, 0)
@@ -200,16 +188,7 @@ export function RicaviList() {
         banner="SAL (Stati Avanzamento Lavori) e fatture attive, con stato di incasso e scadenze."
         actions={
           <>
-            {isAdmin && (
-              <Button
-                variant="secondary"
-                icon={syncM.isPending ? 'loader-circle' : 'refresh-cw'}
-                onClick={sincronizza}
-                disabled={syncM.isPending}
-              >
-                Sincronizza fatture
-              </Button>
-            )}
+            {isAdmin && <SyncFattureButton />}
             <Button icon="plus" onClick={openNew}>
               Nuovo ricavo
             </Button>

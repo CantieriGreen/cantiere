@@ -18,7 +18,7 @@ import {
 } from './api'
 import { MaterialeForm } from './MaterialeForm'
 import { FicInboxPassive } from '@/features/ricavi/FicInboxPassive'
-import { useFicSync } from '@/features/ricavi/fic-api'
+import { SyncFattureButton } from '@/features/ricavi/SyncFattureButton'
 
 export function MaterialiList() {
   const toast = useToast()
@@ -26,18 +26,6 @@ export function MaterialiList() {
   const isAdmin = profile?.ruolo === 'admin'
   const { data: materiali = [], isLoading, isError, error } = useMateriali()
   const deleteM = useDeleteMateriale()
-  const syncM = useFicSync()
-
-  const sincronizza = async () => {
-    try {
-      const r = await syncM.mutateAsync()
-      toast.success(
-        `Sincronizzate · passive ${r.passive.importate} nuove, attive ${r.attive.importate} nuove`
-      )
-    } catch (e) {
-      toast.error('Errore: ' + (e instanceof Error ? e.message : 'sconosciuto'))
-    }
-  }
 
   const [search, setSearch] = useState('')
   const [formOpen, setFormOpen] = useState(false)
@@ -190,16 +178,7 @@ export function MaterialiList() {
         banner="Acquisti di materiali imputati ai cantieri. L'importo contribuisce ai costi diretti della commessa."
         actions={
           <>
-            {isAdmin && (
-              <Button
-                variant="secondary"
-                icon={syncM.isPending ? 'loader-circle' : 'refresh-cw'}
-                onClick={sincronizza}
-                disabled={syncM.isPending}
-              >
-                Sincronizza fatture
-              </Button>
-            )}
+            {isAdmin && <SyncFattureButton />}
             <Button icon="plus" onClick={openNew}>
               Nuovo materiale
             </Button>
