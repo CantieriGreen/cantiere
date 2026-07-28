@@ -10,7 +10,7 @@ export function Topbar() {
       <GlobalSearch />
       <div className="flex items-center gap-1.5">
         <a
-          href={`mailto:${SUPPORT_MAIL}?subject=Richiesta%20assistenza%20Tecnoimpianti`}
+          href={`mailto:${SUPPORT_MAIL}?subject=Richiesta%20assistenza%20CEM%20Energia`}
           className="h-9 w-9 inline-flex items-center justify-center text-ink-soft hover:text-ink rounded-md hover:bg-line-soft"
           title="Assistenza"
         >

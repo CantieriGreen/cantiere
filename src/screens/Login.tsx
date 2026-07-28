@@ -38,7 +38,7 @@ export function Login() {
           </div>
           <div>
             <div className="text-[20px] font-semibold text-ink tracking-tight leading-none">
-              Tecnoimpianti
+              CEM Energia srl
             </div>
             <div className="text-xs text-ink-soft mt-1">Gestionale cantieri</div>
           </div>
@@ -102,7 +102,7 @@ export function Login() {
             <p className="text-xs text-ink-soft">
               Problemi ad accedere?{' '}
               <a
-                href="mailto:support@greenconsulting.it?subject=Problema%20accesso%20Tecnoimpianti"
+                href="mailto:support@greenconsulting.it?subject=Problema%20accesso%20CEM%20Energia"
                 className="text-navy-700 font-medium hover:underline"
               >
                 Contatta il supporto
@@ -112,7 +112,7 @@ export function Login() {
         </div>
 
         <p className="text-center text-xs text-ink-faint mt-6">
-          © {new Date().getFullYear()} Tecnoimpianti
+          © {new Date().getFullYear()} CEM Energia srl
         </p>
       </div>
     </div>
