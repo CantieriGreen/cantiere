@@ -1,5 +1,5 @@
 import { lazy, type ComponentType } from 'react'
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppShell } from '@/layout/AppShell'
 import { RequireAuth } from '@/layout/RequireAuth'
 import { Login } from '@/screens/Login'
@@ -34,6 +34,8 @@ const ReportScreen = lazyNamed(() => import('@/features/report/ReportScreen'), '
 const ImpostazioniScreen = lazyNamed(() => import('@/features/impostazioni/ImpostazioniScreen'), 'ImpostazioniScreen')
 const OfferteList = lazyNamed(() => import('@/features/offerte/OfferteList'), 'OfferteList')
 const OffertaDetail = lazyNamed(() => import('@/features/offerte/OffertaDetail'), 'OffertaDetail')
+const MezziScreen = lazyNamed(() => import('@/features/scadenze/MezziScreen'), 'MezziScreen')
+const DipendentiScadenzeScreen = lazyNamed(() => import('@/features/scadenze/DipendentiScadenzeScreen'), 'DipendentiScadenzeScreen')
 
 export const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
@@ -97,6 +99,9 @@ export const router = createBrowserRouter([
           { path: 'anagrafiche/dipendenti', element: <DipendentiList /> },
           { path: 'anagrafiche/dipendenti/:id', element: <DipendenteDetail /> },
           { path: 'report', element: <ReportScreen /> },
+          { path: 'scadenze', element: <Navigate to="/scadenze/mezzi" replace /> },
+          { path: 'scadenze/mezzi', element: <MezziScreen /> },
+          { path: 'scadenze/dipendenti', element: <DipendentiScadenzeScreen /> },
           { path: 'impostazioni', element: <ImpostazioniScreen /> },
         ],
       },

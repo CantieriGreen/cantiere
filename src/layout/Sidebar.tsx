@@ -14,6 +14,8 @@ type NavItem = {
   to?: string
   count?: number
   children?: NavChild[]
+  /** Se indicato, la voce e' visibile solo a questi ruoli. */
+  ruoli?: string[]
 }
 
 const NAV: NavItem[] = [
@@ -36,6 +38,16 @@ const NAV: NavItem[] = [
     ],
   },
   { id: 'report', label: 'Report', icon: 'chart-column', to: '/report' },
+  {
+    id: 'scadenze',
+    label: 'Calendario scadenze',
+    icon: 'calendar-clock',
+    ruoli: ['admin', 'direzione'],
+    children: [
+      { id: 'scadenze-mezzi', label: 'Mezzi', to: '/scadenze/mezzi' },
+      { id: 'scadenze-dipendenti', label: 'Dipendenti', to: '/scadenze/dipendenti' },
+    ],
+  },
   { id: 'impostazioni', label: 'Impostazioni', icon: 'settings', to: '/impostazioni' },
 ]
 
@@ -53,6 +65,7 @@ export function Sidebar() {
   const addon = useAddon()
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     anagrafiche: location.pathname.startsWith('/anagrafiche'),
+    scadenze: location.pathname.startsWith('/scadenze'),
   })
 
   const toggle = (id: string) =>
@@ -99,7 +112,9 @@ export function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto scroll-thin px-2.5 py-2 space-y-0.5">
-        {NAV.map((item) => {
+        {NAV.filter(
+          (item) => !item.ruoli || (profile && item.ruoli.includes(profile.ruolo))
+        ).map((item) => {
           const hasKids = !!item.children
           const expanded = !!openGroups[item.id]
           const groupActive = hasKids

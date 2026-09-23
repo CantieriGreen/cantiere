@@ -1,6 +1,7 @@
 import { Icon } from '@/components/ui/Icon'
 import { GlobalSearch } from './GlobalSearch'
 import { UserMenu } from './UserMenu'
+import { ScadenzeBell } from '@/features/scadenze/ScadenzeBell'
 
 const SUPPORT_MAIL = 'support@greenconsulting.it'
 
@@ -9,6 +10,7 @@ export function Topbar() {
     <header className="h-14 bg-white border-b border-line sticky top-0 z-30 flex items-center justify-between px-6">
       <GlobalSearch />
       <div className="flex items-center gap-1.5">
+        <ScadenzeBell />
         <a
           href={`mailto:${SUPPORT_MAIL}?subject=Richiesta%20assistenza%20CEM%20Energia`}
           className="h-9 w-9 inline-flex items-center justify-center text-ink-soft hover:text-ink rounded-md hover:bg-line-soft"
