@@ -49,3 +49,28 @@ public.offerte           (numerazione EC-P-2026-NNN-RXX)
 - `calcola_margine_cantiere(cantiere_id)` — restituisce costi/ricavi/margine
 - `applica_ripartizione_indiretto(periodo, regola_id)` — calcola e salva le righe
 - `genera_numero_offerta(progressivo, revisione)` — formato `EC-P-2026-NNN-RXX`
+
+## Calendario scadenze (mezzi + dipendenti)
+
+| File | Descrizione |
+|---|---|
+| `19_scadenze.sql` | Tabelle `mezzi`, `scadenze_visite_mediche`, `tipi_formazione` (con i 10 corsi predefiniti), `scadenze_formazione`, `scadenze_documenti`; vista unificata `v_scadenze`; log `scadenze_notifiche_log`; RPC `scadenze_da_notificare` e `scadenze_destinatari_admin`; RLS (lettura admin/direzione, scrittura admin). Idempotente. |
+| `20_scadenze_cron.sql` | Job `pg_cron` giornaliero che chiama la Edge Function `scadenze-notify`. **Contiene due segnaposto da sostituire** prima di eseguirlo. |
+
+### Attivazione, in ordine
+
+1. SQL Editor → esegui `19_scadenze.sql`. Da qui la sezione funziona già nell'app (inserimento, ricerca, campanella degli avvisi).
+2. Account [Resend](https://resend.com): verifica il dominio mittente e crea una API key.
+3. Deploy della Edge Function e dei secret (serve la Supabase CLI):
+   ```bash
+   supabase secrets set RESEND_API_KEY="re_..." \
+     RESEND_FROM_EMAIL="scadenze@<dominio-verificato>" \
+     SCADENZE_CRON_SECRET="<stringa-casuale-lunga>" \
+     APP_URL="https://<indirizzo-app>"
+   supabase functions deploy scadenze-notify --no-verify-jwt
+   ```
+   Facoltativo: `SCADENZE_MAIL_TO="a@x.it,b@y.it"` per destinatari fissi al posto degli admin attivi.
+4. Prova a mano: nell'app, *Calendario scadenze → Invia avvisi email*.
+5. SQL Editor → sostituisci `<PROJECT_REF>` e `<SCADENZE_CRON_SECRET>` in `20_scadenze_cron.sql` ed eseguilo.
+
+Le email partono una volta al giorno per le scadenze che distano **esattamente** 14, 7, 3 o 1 giorno; ogni (scadenza, soglia) viene notificata una sola volta. Se l'invio fallisce il log viene annullato e il giro successivo riprova.

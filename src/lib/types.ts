@@ -387,3 +387,105 @@ export type OffertaRevisione = {
   nota: string | null
   created_at: string
 }
+
+// ============================================================
+// Calendario scadenze
+// ============================================================
+
+export type Mezzo = {
+  id: string
+  tipo_mezzo: string
+  targa: string | null
+  descrizione: string | null
+  scadenza_assicurazione: string | null
+  scadenza_bollo: string | null
+  scadenza_revisione: string | null
+  attivo: boolean
+  note: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type MezzoInput = Omit<Mezzo, 'id' | 'created_at' | 'updated_at'>
+
+export type VisitaMedica = {
+  id: string
+  dipendente_id: string | null
+  nome: string
+  cognome: string
+  telefono: string | null
+  scadenza_visita: string
+  note: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type VisitaMedicaInput = Omit<
+  VisitaMedica,
+  'id' | 'created_at' | 'updated_at'
+>
+
+export type TipoFormazione = {
+  id: string
+  nome: string
+  predefinito: boolean
+  attivo: boolean
+  created_at: string
+}
+
+export type TipologiaFormazione = 'corso' | 'aggiornamento'
+
+export type Formazione = {
+  id: string
+  dipendente_id: string | null
+  nome: string
+  cognome: string
+  tipo_formazione_id: string
+  tipologia: TipologiaFormazione
+  scadenza: string
+  note: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type FormazioneInput = Omit<Formazione, 'id' | 'created_at' | 'updated_at'>
+
+export type DocumentoDipendente = {
+  id: string
+  dipendente_id: string | null
+  nome: string
+  cognome: string
+  scadenza_patente: string | null
+  ha_permesso_soggiorno: boolean
+  scadenza_permesso: string | null
+  note: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type DocumentoDipendenteInput = Omit<
+  DocumentoDipendente,
+  'id' | 'created_at' | 'updated_at'
+>
+
+export type TipoScadenza =
+  | 'mezzo_assicurazione'
+  | 'mezzo_bollo'
+  | 'mezzo_revisione'
+  | 'visita_medica'
+  | 'formazione'
+  | 'patente'
+  | 'permesso_soggiorno'
+
+/** Riga della vista unificata v_scadenze */
+export type ScadenzaUnificata = {
+  tipo: TipoScadenza
+  categoria: 'mezzi' | 'dipendenti'
+  record_id: string
+  titolo: string
+  dettaglio: string
+  riferimento: string | null
+  telefono: string | null
+  scadenza: string
+  giorni: number
+}
