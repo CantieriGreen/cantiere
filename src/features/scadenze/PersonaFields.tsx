@@ -1,6 +1,7 @@
 import { Field, Input, Select } from '@/components/ui/Field'
+import { Toggle } from '@/components/ui/Toggle'
 import { useDipendenti } from '@/features/dipendenti/api'
-import type { Persona } from './persona'
+import { stessoNominativo, type Persona } from './persona'
 
 type Props = {
   value: Persona
@@ -20,12 +21,19 @@ export function PersonaFields({ value, onChange, conTelefono }: Props) {
     const d = dipendenti.find((x) => x.id === id)
     if (!d) return onChange({ ...value, dipendente_id: '' })
     onChange({
+      aggiungiAnagrafica: false,
       dipendente_id: d.id,
       nome: d.nome,
       cognome: d.cognome,
       telefono: conTelefono ? d.telefono ?? value.telefono ?? '' : value.telefono,
     })
   }
+
+  const liberi = !value.dipendente_id
+  const giaPresente =
+    liberi && value.nome.trim() && value.cognome.trim()
+      ? dipendenti.find((d) => stessoNominativo(d, value))
+      : undefined
 
   return (
     <>
@@ -69,6 +77,36 @@ export function PersonaFields({ value, onChange, conTelefono }: Props) {
             value={value.telefono ?? ''}
             onChange={(e) => onChange({ ...value, telefono: e.target.value })}
           />
+        </Field>
+      )}
+      {liberi && (
+        <Field
+          label="Anagrafica dipendenti"
+          span={12}
+          hint={
+            giaPresente
+              ? undefined
+              : 'Se attivo, il dipendente viene creato anche in Anagrafiche → Dipendenti: poi completa la tariffa oraria da lì.'
+          }
+        >
+          {giaPresente ? (
+            <p className="text-sm text-ink-soft">
+              {giaPresente.cognome} {giaPresente.nome} è già in anagrafica.{' '}
+              <button
+                type="button"
+                className="font-medium text-navy-600 underline"
+                onClick={() => scegli(giaPresente.id)}
+              >
+                Collega la scadenza a questo dipendente
+              </button>
+            </p>
+          ) : (
+            <Toggle
+              checked={!!value.aggiungiAnagrafica}
+              onChange={(v) => onChange({ ...value, aggiungiAnagrafica: v })}
+              label="Aggiungi anche all'anagrafica dipendenti"
+            />
+          )}
         </Field>
       )}
     </>

@@ -20,13 +20,6 @@ type NavItem = {
 
 const NAV: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: 'layout-dashboard', to: '/' },
-  { id: 'cantieri', label: 'Cantieri commessa', icon: 'hard-hat', to: '/cantieri' },
-  { id: 'manutenzione', label: 'Cantieri manutenzione', icon: 'wrench', to: '/manutenzione' },
-  { id: 'offerte', label: 'Offerte', icon: 'file-pen', to: '/offerte' },
-  { id: 'rapportini', label: 'Rapportini ore', icon: 'clipboard-list', to: '/rapportini' },
-  { id: 'materiali', label: 'Materiali', icon: 'package', to: '/materiali' },
-  { id: 'ricavi', label: 'Ricavi', icon: 'receipt', to: '/ricavi' },
-  { id: 'indiretti', label: 'Costi indiretti', icon: 'building-2', to: '/indiretti' },
   {
     id: 'anagrafiche',
     label: 'Anagrafiche',
@@ -37,6 +30,13 @@ const NAV: NavItem[] = [
       { id: 'dipendenti', label: 'Dipendenti', to: '/anagrafiche/dipendenti' },
     ],
   },
+  { id: 'cantieri', label: 'Cantieri commessa', icon: 'hard-hat', to: '/cantieri' },
+  { id: 'manutenzione', label: 'Cantieri manutenzione', icon: 'wrench', to: '/manutenzione' },
+  { id: 'offerte', label: 'Offerte', icon: 'file-pen', to: '/offerte' },
+  { id: 'rapportini', label: 'Rapportini ore', icon: 'clipboard-list', to: '/rapportini' },
+  { id: 'materiali', label: 'Materiali', icon: 'package', to: '/materiali' },
+  { id: 'ricavi', label: 'Ricavi', icon: 'receipt', to: '/ricavi' },
+  { id: 'indiretti', label: 'Costi indiretti', icon: 'building-2', to: '/indiretti' },
   { id: 'report', label: 'Report', icon: 'chart-column', to: '/report' },
   {
     id: 'scadenze',

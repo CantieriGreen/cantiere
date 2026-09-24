@@ -12,7 +12,9 @@ import type {
   VisitaMedica,
   VisitaMedicaInput,
 } from '@/lib/types'
+import { useCreateDipendente } from '@/features/dipendenti/api'
 import { GIORNI_AVVISO } from './constants'
+import type { Persona } from './persona'
 
 // Tutte le chiavi sotto 'scadenze': ogni modifica invalida anche la vista
 // unificata, cosi' la campanella degli avvisi si aggiorna subito.
@@ -225,4 +227,30 @@ export function useInviaAvvisiEmail() {
       return data as EsitoInvioAvvisi
     },
   })
+}
+
+/**
+ * Restituisce il dipendente_id da salvare sulla scadenza. Se il nominativo
+ * e' libero e l'utente ha chiesto di aggiungerlo all'anagrafica, crea prima
+ * il dipendente (senza tariffa: va completata da Anagrafiche → Dipendenti).
+ */
+export function useDipendenteDaPersona() {
+  const createDip = useCreateDipendente()
+  const risolvi = async (p: Persona): Promise<string | null> => {
+    if (p.dipendente_id) return p.dipendente_id
+    if (!p.aggiungiAnagrafica) return null
+    const d = await createDip.mutateAsync({
+      nome: p.nome.trim(),
+      cognome: p.cognome.trim(),
+      telefono: p.telefono?.trim() || null,
+      codice_fiscale: null,
+      mansione: null,
+      tipo: 'operaio',
+      email: null,
+      data_assunzione: null,
+      attivo: true,
+    })
+    return d.id
+  }
+  return { risolvi, isPending: createDip.isPending }
 }
