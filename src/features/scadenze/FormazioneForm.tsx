@@ -11,6 +11,7 @@ import {
   useCreateTipoFormazione,
   useTipiFormazione,
   useUpdateFormazione,
+  useDipendenteDaPersona,
 } from './api'
 import { TIPOLOGIA_FORMAZIONE_LABEL } from './constants'
 import { PersonaFields } from './PersonaFields'
@@ -32,6 +33,7 @@ export function FormazioneForm({ open, onClose, formazione }: Props) {
   const isEdit = !!formazione
   const toast = useToast()
   const { data: tipi = [] } = useTipiFormazione()
+  const dipM = useDipendenteDaPersona()
   const createM = useCreateFormazioni()
   const updateM = useUpdateFormazione()
   const creaTipoM = useCreateTipoFormazione()
@@ -102,7 +104,7 @@ export function FormazioneForm({ open, onClose, formazione }: Props) {
     }
   }
 
-  const saving = createM.isPending || updateM.isPending
+  const saving = createM.isPending || updateM.isPending || dipM.isPending
 
   const submit = async () => {
     const err = validaPersona(persona)
@@ -121,6 +123,15 @@ export function FormazioneForm({ open, onClose, formazione }: Props) {
       note: note.trim() || null,
     }
     try {
+      if (!persona.dipendente_id && persona.aggiungiAnagrafica) {
+        const id = await dipM.risolvi(persona)
+        if (id) {
+          base.dipendente_id = id
+          // se il salvataggio sotto fallisce, un nuovo tentativo non duplica il dipendente
+          setPersona((p) => ({ ...p, dipendente_id: id, aggiungiAnagrafica: false }))
+          toast.success(`${persona.cognome.trim()} ${persona.nome.trim()} aggiunto all'anagrafica dipendenti`)
+        }
+      }
       if (isEdit && formazione) {
         const c = corsi[0]
         await updateM.mutateAsync({

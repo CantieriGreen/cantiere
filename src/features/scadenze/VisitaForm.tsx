@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { Field, Input, Textarea } from '@/components/ui/Field'
 import { useToast } from '@/components/ui/toast'
 import type { VisitaMedica, VisitaMedicaInput } from '@/lib/types'
-import { useCreateVisita, useUpdateVisita } from './api'
+import { useCreateVisita, useUpdateVisita, useDipendenteDaPersona } from './api'
 import { PersonaFields } from './PersonaFields'
 import { personaVuota, validaPersona, type Persona } from './persona'
 
@@ -17,6 +17,7 @@ type Props = {
 export function VisitaForm({ open, onClose, visita }: Props) {
   const isEdit = !!visita
   const toast = useToast()
+  const dipM = useDipendenteDaPersona()
   const createM = useCreateVisita()
   const updateM = useUpdateVisita()
 
@@ -42,7 +43,7 @@ export function VisitaForm({ open, onClose, visita }: Props) {
     }
   }, [open, visita])
 
-  const saving = createM.isPending || updateM.isPending
+  const saving = createM.isPending || updateM.isPending || dipM.isPending
 
   const submit = async () => {
     const err = validaPersona(persona)
@@ -58,6 +59,15 @@ export function VisitaForm({ open, onClose, visita }: Props) {
       note: note.trim() || null,
     }
     try {
+      if (!persona.dipendente_id && persona.aggiungiAnagrafica) {
+        const id = await dipM.risolvi(persona)
+        if (id) {
+          input.dipendente_id = id
+          // se il salvataggio sotto fallisce, un nuovo tentativo non duplica il dipendente
+          setPersona((p) => ({ ...p, dipendente_id: id, aggiungiAnagrafica: false }))
+          toast.success(`${persona.cognome.trim()} ${persona.nome.trim()} aggiunto all'anagrafica dipendenti`)
+        }
+      }
       if (isEdit && visita) {
         await updateM.mutateAsync({ id: visita.id, input })
         toast.success('Visita aggiornata')
