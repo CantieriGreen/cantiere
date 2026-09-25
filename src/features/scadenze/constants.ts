@@ -86,4 +86,5 @@ export const TIPO_SCADENZA_META: Record<
   formazione: { icon: 'shield-check', to: '/scadenze/dipendenti?tab=formazione' },
   patente: { icon: 'id-card', to: '/scadenze/dipendenti?tab=documenti' },
   permesso_soggiorno: { icon: 'id-card', to: '/scadenze/dipendenti?tab=documenti' },
+  documento_altro: { icon: 'file-text', to: '/scadenze/altro' },
 }

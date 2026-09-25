@@ -127,25 +127,25 @@ export function ScadenzeBell() {
             </div>
           )}
 
-          <div className="border-t border-line grid grid-cols-2 divide-x divide-line">
-            <button
-              onClick={() => {
-                setOpen(false)
-                navigate('/scadenze/mezzi')
-              }}
-              className="h-10 text-sm text-navy-700 hover:bg-line-soft inline-flex items-center justify-center gap-1.5"
-            >
-              <Icon name="car" size={14} /> Mezzi
-            </button>
-            <button
-              onClick={() => {
-                setOpen(false)
-                navigate('/scadenze/dipendenti')
-              }}
-              className="h-10 text-sm text-navy-700 hover:bg-line-soft inline-flex items-center justify-center gap-1.5"
-            >
-              <Icon name="users" size={14} /> Dipendenti
-            </button>
+          <div className="border-t border-line grid grid-cols-3 divide-x divide-line">
+            {(
+              [
+                { to: '/scadenze/mezzi', icon: 'car', label: 'Mezzi' },
+                { to: '/scadenze/dipendenti', icon: 'users', label: 'Dipendenti' },
+                { to: '/scadenze/altro', icon: 'file-text', label: 'Altro' },
+              ] as const
+            ).map((l) => (
+              <button
+                key={l.to}
+                onClick={() => {
+                  setOpen(false)
+                  navigate(l.to)
+                }}
+                className="h-10 text-sm text-navy-700 hover:bg-line-soft inline-flex items-center justify-center gap-1.5"
+              >
+                <Icon name={l.icon} size={14} /> {l.label}
+              </button>
+            ))}
           </div>
         </div>
       )}

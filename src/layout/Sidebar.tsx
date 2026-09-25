@@ -46,6 +46,7 @@ const NAV: NavItem[] = [
     children: [
       { id: 'scadenze-mezzi', label: 'Mezzi', to: '/scadenze/mezzi' },
       { id: 'scadenze-dipendenti', label: 'Dipendenti', to: '/scadenze/dipendenti' },
+      { id: 'scadenze-altro', label: 'Altro', to: '/scadenze/altro' },
     ],
   },
   { id: 'impostazioni', label: 'Impostazioni', icon: 'settings', to: '/impostazioni' },

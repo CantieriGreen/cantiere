@@ -1,7 +1,8 @@
 // ============================================================
 // EdilControl - Edge Function: scadenze-notify
 // Invia agli amministratori un'email riepilogativa delle scadenze
-// (mezzi, visite mediche, formazione, patenti, permessi di soggiorno)
+// (mezzi, visite mediche, formazione, patenti, permessi di soggiorno,
+// documenti vari della sezione "Altro" come il DURC)
 // che si trovano esattamente a 14, 7, 3 o 1 giorno dalla scadenza.
 //
 // Ogni (scadenza, soglia) viene notificata UNA sola volta: il log
@@ -45,12 +46,18 @@ function json(body: unknown, status = 200) {
 
 type Scadenza = {
   tipo: string
-  categoria: 'mezzi' | 'dipendenti'
+  categoria: 'mezzi' | 'dipendenti' | 'altro'
   record_id: string
   titolo: string
   dettaglio: string
   scadenza: string
   giorni: number
+}
+
+const AREA: Record<Scadenza['categoria'], string> = {
+  mezzi: 'Mezzo',
+  dipendenti: 'Dipendente',
+  altro: 'Documento',
 }
 
 function formatDate(iso: string) {
@@ -91,7 +98,7 @@ function componiEmail(righe: Scadenza[], appUrl: string | undefined) {
           (r) => `
           <tr>
             <td style="padding:8px 10px;border-bottom:1px solid #eceff3;color:#6b7280;font-size:12px;">${
-              r.categoria === 'mezzi' ? 'Mezzo' : 'Dipendente'
+              AREA[r.categoria] ?? ''
             }</td>
             <td style="padding:8px 10px;border-bottom:1px solid #eceff3;font-weight:600;color:#1f2937;">${escapeHtml(r.titolo)}</td>
             <td style="padding:8px 10px;border-bottom:1px solid #eceff3;color:#374151;">${escapeHtml(r.dettaglio)}</td>

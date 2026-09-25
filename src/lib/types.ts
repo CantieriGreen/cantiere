@@ -468,6 +468,18 @@ export type DocumentoDipendenteInput = Omit<
   'id' | 'created_at' | 'updated_at'
 >
 
+/** Documento aziendale con scadenza (sezione "Altro": DURC, ecc.) */
+export type DocumentoAltro = {
+  id: string
+  nome_documento: string
+  scadenza: string
+  note: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type DocumentoAltroInput = Omit<DocumentoAltro, 'id' | 'created_at' | 'updated_at'>
+
 export type TipoScadenza =
   | 'mezzo_assicurazione'
   | 'mezzo_bollo'
@@ -476,11 +488,12 @@ export type TipoScadenza =
   | 'formazione'
   | 'patente'
   | 'permesso_soggiorno'
+  | 'documento_altro'
 
 /** Riga della vista unificata v_scadenze */
 export type ScadenzaUnificata = {
   tipo: TipoScadenza
-  categoria: 'mezzi' | 'dipendenti'
+  categoria: 'mezzi' | 'dipendenti' | 'altro'
   record_id: string
   titolo: string
   dettaglio: string
