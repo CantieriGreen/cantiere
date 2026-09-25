@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import type {
+  DocumentoAltro,
+  DocumentoAltroInput,
   DocumentoDipendente,
   DocumentoDipendenteInput,
   Formazione,
@@ -24,6 +26,7 @@ const VISITE_KEY = [...ROOT, 'visite'] as const
 const FORMAZIONE_KEY = [...ROOT, 'formazione'] as const
 const TIPI_FORMAZIONE_KEY = [...ROOT, 'tipi-formazione'] as const
 const DOCUMENTI_KEY = [...ROOT, 'documenti'] as const
+const ALTRO_KEY = [...ROOT, 'altro'] as const
 const AVVISI_KEY = [...ROOT, 'avvisi'] as const
 
 /**
@@ -178,6 +181,13 @@ export const useDocumentiDipendenti = documenti.useList
 export const useCreateDocumento = documenti.useCreate
 export const useUpdateDocumento = documenti.useUpdate
 export const useDeleteDocumento = documenti.useDelete
+
+// ---- Altri documenti (DURC, ecc.) ----
+const altro = crud<DocumentoAltro, DocumentoAltroInput>('scadenze_altro', ALTRO_KEY, 'scadenza')
+export const useDocumentiAltro = altro.useList
+export const useCreateDocumentoAltro = altro.useCreate
+export const useUpdateDocumentoAltro = altro.useUpdate
+export const useDeleteDocumentoAltro = altro.useDelete
 
 // ---- Avvisi (vista unificata) ----
 

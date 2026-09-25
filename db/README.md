@@ -56,6 +56,7 @@ public.offerte           (numerazione EC-P-2026-NNN-RXX)
 |---|---|
 | `19_scadenze.sql` | Tabelle `mezzi`, `scadenze_visite_mediche`, `tipi_formazione` (con i 10 corsi predefiniti), `scadenze_formazione`, `scadenze_documenti`; vista unificata `v_scadenze`; log `scadenze_notifiche_log`; RPC `scadenze_da_notificare` e `scadenze_destinatari_admin`; RLS (lettura admin/direzione, scrittura admin). Idempotente. |
 | `20_scadenze_cron.sql` | Job `pg_cron` giornaliero che chiama la Edge Function `scadenze-notify`. **Contiene due segnaposto da sostituire** prima di eseguirlo. |
+| `21_scadenze_altro.sql` | Sezione **Altro**: tabella `scadenze_altro` (DURC e altri documenti: nome + scadenza), RLS come sopra, vista `v_scadenze` estesa. Idempotente. **Se si riesegue `19_scadenze.sql`, rieseguire poi anche questo** (19 ricrea la vista senza la parte Altro). |
 
 ### Attivazione, in ordine
 
@@ -72,5 +73,6 @@ public.offerte           (numerazione EC-P-2026-NNN-RXX)
    Facoltativo: `SCADENZE_MAIL_TO="a@x.it,b@y.it"` per destinatari fissi al posto degli admin attivi.
 4. Prova a mano: nell'app, *Calendario scadenze → Invia avvisi email*.
 5. SQL Editor → sostituisci `<PROJECT_REF>` e `<SCADENZE_CRON_SECRET>` in `20_scadenze_cron.sql` ed eseguilo.
+6. SQL Editor → esegui `21_scadenze_altro.sql` (sezione *Altro*), poi ridistribuisci `scadenze-notify` perché nell'email i documenti compaiano con l'area "Documento".
 
 Le email partono una volta al giorno per le scadenze che distano **esattamente** 14, 7, 3 o 1 giorno; ogni (scadenza, soglia) viene notificata una sola volta. Se l'invio fallisce il log viene annullato e il giro successivo riprova.

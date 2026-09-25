@@ -36,6 +36,7 @@ const OfferteList = lazyNamed(() => import('@/features/offerte/OfferteList'), 'O
 const OffertaDetail = lazyNamed(() => import('@/features/offerte/OffertaDetail'), 'OffertaDetail')
 const MezziScreen = lazyNamed(() => import('@/features/scadenze/MezziScreen'), 'MezziScreen')
 const DipendentiScadenzeScreen = lazyNamed(() => import('@/features/scadenze/DipendentiScadenzeScreen'), 'DipendentiScadenzeScreen')
+const AltroScreen = lazyNamed(() => import('@/features/scadenze/AltroScreen'), 'AltroScreen')
 
 export const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
@@ -102,6 +103,7 @@ export const router = createBrowserRouter([
           { path: 'scadenze', element: <Navigate to="/scadenze/mezzi" replace /> },
           { path: 'scadenze/mezzi', element: <MezziScreen /> },
           { path: 'scadenze/dipendenti', element: <DipendentiScadenzeScreen /> },
+          { path: 'scadenze/altro', element: <AltroScreen /> },
           { path: 'impostazioni', element: <ImpostazioniScreen /> },
         ],
       },
