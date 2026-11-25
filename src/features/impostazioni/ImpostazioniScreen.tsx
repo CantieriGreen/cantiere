@@ -5,12 +5,13 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
 import { Icon } from '@/components/ui/Icon'
+import { Drawer } from '@/components/ui/Drawer'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { useToast } from '@/components/ui/toast'
 import { useAuth } from '@/lib/auth'
 import type { Ruolo } from '@/lib/types'
 import { useAzienda, useUpdateAzienda, type AziendaInput } from '@/features/azienda/api'
-import { useProfili, useUpdateProfilo } from './users-api'
+import { useCreaUtente, useProfili, useUpdateProfilo, type NuovoUtenteInput } from './users-api'
 
 const TABS = [
   { id: 'azienda', label: 'Dati azienda', icon: 'building-2' },
@@ -188,6 +189,7 @@ function TabUtenti() {
   const { user } = useAuth()
   const { data: utenti = [], isLoading } = useProfili()
   const updateM = useUpdateProfilo()
+  const [nuovoOpen, setNuovoOpen] = useState(false)
 
   const changeRuolo = async (id: string, ruolo: Ruolo) => {
     try {
@@ -208,13 +210,19 @@ function TabUtenti() {
 
   return (
     <div>
-      <div className="mb-5">
-        <h2 className="text-base font-semibold text-ink">Utenti e ruoli</h2>
-        <p className="text-sm text-ink-soft mt-0.5">
-          Gestisci ruolo e stato degli utenti. I nuovi utenti si creano dalla
-          dashboard Supabase (Authentication).
-        </p>
+      <div className="mb-5 flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-base font-semibold text-ink">Utenti e ruoli</h2>
+          <p className="text-sm text-ink-soft mt-0.5">
+            Crea nuovi utenti e gestisci ruolo e stato di quelli esistenti.
+          </p>
+        </div>
+        <Button icon="user-plus" onClick={() => setNuovoOpen(true)}>
+          Nuovo utente
+        </Button>
       </div>
+
+      <NuovoUtenteDrawer open={nuovoOpen} onClose={() => setNuovoOpen(false)} />
 
       {isLoading ? (
         <div className="py-10 text-center">
@@ -273,5 +281,143 @@ function TabUtenti() {
         </div>
       )}
     </div>
+  )
+}
+
+const VUOTO: NuovoUtenteInput = { nome: '', email: '', password: '', ruolo: 'capo_cantiere' }
+
+/** Password casuale leggibile (senza caratteri ambigui come 0/O, 1/l). */
+function generaPassword(len = 12) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'
+  const buf = new Uint32Array(len)
+  crypto.getRandomValues(buf)
+  return Array.from(buf, (n) => chars[n % chars.length]).join('')
+}
+
+function NuovoUtenteDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const toast = useToast()
+  const creaM = useCreaUtente()
+  const [form, setForm] = useState<NuovoUtenteInput>(VUOTO)
+  const [mostra, setMostra] = useState(false)
+
+  const set = <K extends keyof NuovoUtenteInput>(k: K, v: NuovoUtenteInput[K]) =>
+    setForm((s) => ({ ...s, [k]: v }))
+
+  const chiudi = () => {
+    if (creaM.isPending) return
+    setForm(VUOTO)
+    setMostra(false)
+    onClose()
+  }
+
+  const crea = async () => {
+    if (!form.nome.trim()) return toast.error('Inserisci nome e cognome')
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
+      return toast.error('Indirizzo email non valido')
+    if (form.password.length < 8)
+      return toast.error('La password deve avere almeno 8 caratteri')
+    try {
+      await creaM.mutateAsync({ ...form, nome: form.nome.trim(), email: form.email.trim() })
+      toast.success(`Utente ${form.nome.trim()} creato`)
+      setForm(VUOTO)
+      setMostra(false)
+      onClose()
+    } catch (e) {
+      toast.error('Errore: ' + (e instanceof Error ? e.message : 'sconosciuto'))
+    }
+  }
+
+  return (
+    <Drawer
+      open={open}
+      onClose={chiudi}
+      title="Nuovo utente"
+      subtitle="L'utente potrà accedere subito con email e password"
+      footer={
+        <div className="flex items-center justify-end gap-3">
+          <Button variant="secondary" onClick={chiudi} disabled={creaM.isPending}>
+            Annulla
+          </Button>
+          <Button
+            onClick={crea}
+            disabled={creaM.isPending}
+            icon={creaM.isPending ? 'loader-circle' : 'user-plus'}
+          >
+            Crea utente
+          </Button>
+        </div>
+      }
+    >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          crea()
+        }}
+        className="grid grid-cols-12 gap-4"
+      >
+        <Field label="Nome e cognome" required span={12}>
+          <Input
+            placeholder="es. Mario Rossi"
+            value={form.nome}
+            onChange={(e) => set('nome', e.target.value)}
+          />
+        </Field>
+        <Field label="Email" required span={12} hint="Serve per accedere all'app.">
+          <Input
+            leftIcon="mail"
+            type="email"
+            autoComplete="off"
+            value={form.email}
+            onChange={(e) => set('email', e.target.value)}
+          />
+        </Field>
+        <Field
+          label="Password iniziale"
+          required
+          span={12}
+          hint="Almeno 8 caratteri. Comunicala tu all'utente: l'app non invia email di benvenuto."
+        >
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Input
+                leftIcon="lock"
+                type={mostra ? 'text' : 'password'}
+                autoComplete="new-password"
+                value={form.password}
+                onChange={(e) => set('password', e.target.value)}
+              />
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setMostra((m) => !m)}
+            >
+              {mostra ? 'Nascondi' : 'Mostra'}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              icon="refresh-cw"
+              onClick={() => {
+                set('password', generaPassword())
+                setMostra(true)
+              }}
+            >
+              Genera
+            </Button>
+          </div>
+        </Field>
+        <Field label="Ruolo" required span={12}>
+          <Select
+            value={form.ruolo}
+            onChange={(e) => set('ruolo', e.target.value as Ruolo)}
+          >
+            <option value="capo_cantiere">{RUOLO_LABEL.capo_cantiere}</option>
+            <option value="direzione">{RUOLO_LABEL.direzione}</option>
+            <option value="admin">{RUOLO_LABEL.admin}</option>
+          </Select>
+        </Field>
+      </form>
+    </Drawer>
   )
 }
