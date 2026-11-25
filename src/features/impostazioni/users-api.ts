@@ -43,3 +43,33 @@ export function useUpdateProfilo() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['profili'] }),
   })
 }
+
+export type NuovoUtenteInput = {
+  nome: string
+  email: string
+  password: string
+  ruolo: Ruolo
+}
+
+/** Crea un utente tramite la Edge Function utenti-crea (solo admin). */
+export function useCreaUtente() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: NuovoUtenteInput): Promise<void> => {
+      const { error } = await supabase.functions.invoke('utenti-crea', {
+        body: input,
+      })
+      if (error) {
+        let dettaglio = error.message
+        try {
+          const ctx = await (error as { context?: Response }).context?.json()
+          if (ctx?.error) dettaglio = ctx.error + (ctx.dettaglio ? ` — ${ctx.dettaglio}` : '')
+        } catch {
+          /* noop */
+        }
+        throw new Error(dettaglio)
+      }
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['profili'] }),
+  })
+}
