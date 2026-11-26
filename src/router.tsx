@@ -4,6 +4,7 @@ import { AppShell } from '@/layout/AppShell'
 import { RequireAuth } from '@/layout/RequireAuth'
 import { Login } from '@/screens/Login'
 import { AddonGuard } from '@/layout/AddonGuard'
+import { RoleGuard } from '@/layout/RoleGuard'
 
 /** Carica un export con nome come componente lazy (code-splitting per rotta). */
 function lazyNamed<T extends Record<string, ComponentType<unknown>>>(
@@ -101,10 +102,10 @@ export const router = createBrowserRouter([
           { path: 'anagrafiche/dipendenti/:id', element: <DipendenteDetail /> },
           { path: 'report', element: <ReportScreen /> },
           { path: 'scadenze', element: <Navigate to="/scadenze/mezzi" replace /> },
-          { path: 'scadenze/mezzi', element: <MezziScreen /> },
-          { path: 'scadenze/dipendenti', element: <DipendentiScadenzeScreen /> },
-          { path: 'scadenze/altro', element: <AltroScreen /> },
-          { path: 'impostazioni', element: <ImpostazioniScreen /> },
+          { path: 'scadenze/mezzi', element: <RoleGuard ruoli={['admin', 'direzione']}><MezziScreen /></RoleGuard> },
+          { path: 'scadenze/dipendenti', element: <RoleGuard ruoli={['admin', 'direzione']}><DipendentiScadenzeScreen /></RoleGuard> },
+          { path: 'scadenze/altro', element: <RoleGuard ruoli={['admin', 'direzione']}><AltroScreen /></RoleGuard> },
+          { path: 'impostazioni', element: <RoleGuard ruoli={['admin']}><ImpostazioniScreen /></RoleGuard> },
         ],
       },
     ],

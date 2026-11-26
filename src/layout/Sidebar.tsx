@@ -49,7 +49,7 @@ const NAV: NavItem[] = [
       { id: 'scadenze-altro', label: 'Altro', to: '/scadenze/altro' },
     ],
   },
-  { id: 'impostazioni', label: 'Impostazioni', icon: 'settings', to: '/impostazioni' },
+  { id: 'impostazioni', label: 'Impostazioni', icon: 'settings', to: '/impostazioni', ruoli: ['admin'] },
 ]
 
 const SUPPORT_MAIL = 'support@greenconsulting.it'

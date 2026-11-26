@@ -29,6 +29,8 @@ import {
   type CostoIndirettoConCategoria,
 } from './api'
 import { CostoIndirettoForm } from './CostoIndirettoForm'
+import { IndirettiCapoScreen } from './IndirettiCapoScreen'
+import { useAuth } from '@/lib/auth'
 
 // ---- helper periodo (mese) ----
 function currentMonth() {
@@ -59,7 +61,14 @@ type PreviewRow = AnteprimaRipartizione & {
   quota: number
 }
 
+/** Amministratore e direzione: gestione completa; capo cantiere: solo le quote dei suoi cantieri. */
 export function IndirettiScreen() {
+  const { profile } = useAuth()
+  if (profile?.ruolo === 'capo_cantiere') return <IndirettiCapoScreen />
+  return <IndirettiGestione />
+}
+
+function IndirettiGestione() {
   const toast = useToast()
   const [month, setMonth] = useState(currentMonth())
   const periodo = useMemo(() => monthToRange(month), [month])

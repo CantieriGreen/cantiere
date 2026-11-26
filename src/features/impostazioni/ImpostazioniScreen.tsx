@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
 import { Icon } from '@/components/ui/Icon'
 import { Drawer } from '@/components/ui/Drawer'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { useToast } from '@/components/ui/toast'
 import { useAuth } from '@/lib/auth'
@@ -13,6 +14,7 @@ import type { Ruolo } from '@/lib/types'
 import { useAzienda, useUpdateAzienda, type AziendaInput } from '@/features/azienda/api'
 import {
   useAssegnazioni,
+  useCambiaStatoUtente,
   useCantieriBrevi,
   useCreaUtente,
   useProfili,
@@ -199,6 +201,7 @@ function TabUtenti() {
   const { user } = useAuth()
   const { data: utenti = [], isLoading } = useProfili()
   const updateM = useUpdateProfilo()
+  const statoM = useCambiaStatoUtente()
   const [nuovoOpen, setNuovoOpen] = useState(false)
   const [capoAperto, setCapoAperto] = useState<ProfiloUtente | null>(null)
   const { data: assegnazioni = [] } = useAssegnazioni()
@@ -213,10 +216,11 @@ function TabUtenti() {
       toast.error('Errore: ' + (e instanceof Error ? e.message : 'sconosciuto'))
     }
   }
-  const toggleAttivo = async (id: string, attivo: boolean) => {
+  const [daSospendere, setDaSospendere] = useState<ProfiloUtente | null>(null)
+  const toggleAttivo = async (u: ProfiloUtente, attivo: boolean) => {
     try {
-      await updateM.mutateAsync({ id, input: { attivo } })
-      toast.success(attivo ? 'Utente riattivato' : 'Utente sospeso')
+      await statoM.mutateAsync({ id: u.id, attivo })
+      toast.success(attivo ? `${u.nome} riattivato` : `${u.nome} sospeso`)
     } catch (e) {
       toast.error('Errore: ' + (e instanceof Error ? e.message : 'sconosciuto'))
     }
@@ -238,6 +242,25 @@ function TabUtenti() {
 
       <NuovoUtenteDrawer open={nuovoOpen} onClose={() => setNuovoOpen(false)} />
       <AssegnaCantieriDrawer capo={capoAperto} onClose={() => setCapoAperto(null)} />
+      <ConfirmDialog
+        open={!!daSospendere}
+        danger
+        title="Sospendi utente"
+        message={
+          <>
+            Sospendere <strong>{daSospendere?.nome}</strong>? Non potrà più accedere né
+            all'app né ai dati finché non lo riattivi. Se in questo momento è collegato,
+            l'accesso si chiude entro un'ora al massimo.
+          </>
+        }
+        confirmLabel="Sospendi"
+        loading={statoM.isPending}
+        onConfirm={async () => {
+          if (daSospendere) await toggleAttivo(daSospendere, false)
+          setDaSospendere(null)
+        }}
+        onCancel={() => setDaSospendere(null)}
+      />
 
       {isLoading ? (
         <div className="py-10 text-center">
@@ -296,7 +319,8 @@ function TabUtenti() {
 
               {u.id !== user?.id && (
                 <button
-                  onClick={() => toggleAttivo(u.id, !u.attivo)}
+                  onClick={() => (u.attivo ? setDaSospendere(u) : toggleAttivo(u, true))}
+                  disabled={statoM.isPending}
                   className={`text-xs px-2.5 h-8 rounded-md border transition ${
                     u.attivo
                       ? 'border-line text-ink-soft hover:text-bad hover:border-bad/40'
