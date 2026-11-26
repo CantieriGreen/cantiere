@@ -11,7 +11,17 @@ import { useToast } from '@/components/ui/toast'
 import { useAuth } from '@/lib/auth'
 import type { Ruolo } from '@/lib/types'
 import { useAzienda, useUpdateAzienda, type AziendaInput } from '@/features/azienda/api'
-import { useCreaUtente, useProfili, useUpdateProfilo, type NuovoUtenteInput } from './users-api'
+import {
+  useAssegnazioni,
+  useCantieriBrevi,
+  useCreaUtente,
+  useProfili,
+  useSalvaAssegnazioni,
+  useUpdateProfilo,
+  type NuovoUtenteInput,
+  type ProfiloUtente,
+} from './users-api'
+import { STATO_CANTIERE } from '@/features/cantieri/constants'
 
 const TABS = [
   { id: 'azienda', label: 'Dati azienda', icon: 'building-2' },
@@ -190,6 +200,10 @@ function TabUtenti() {
   const { data: utenti = [], isLoading } = useProfili()
   const updateM = useUpdateProfilo()
   const [nuovoOpen, setNuovoOpen] = useState(false)
+  const [capoAperto, setCapoAperto] = useState<ProfiloUtente | null>(null)
+  const { data: assegnazioni = [] } = useAssegnazioni()
+  const contaCantieri = (id: string) =>
+    assegnazioni.filter((a) => a.profile_id === id).length
 
   const changeRuolo = async (id: string, ruolo: Ruolo) => {
     try {
@@ -223,6 +237,7 @@ function TabUtenti() {
       </div>
 
       <NuovoUtenteDrawer open={nuovoOpen} onClose={() => setNuovoOpen(false)} />
+      <AssegnaCantieriDrawer capo={capoAperto} onClose={() => setCapoAperto(null)} />
 
       {isLoading ? (
         <div className="py-10 text-center">
@@ -263,6 +278,21 @@ function TabUtenti() {
               </div>
 
               <Badge tone={RUOLO_TONE[u.ruolo]}>{RUOLO_LABEL[u.ruolo]}</Badge>
+
+              {u.ruolo === 'capo_cantiere' && (
+                <button
+                  onClick={() => setCapoAperto(u)}
+                  title="Scegli i cantieri che questo capo cantiere può vedere"
+                  className={`inline-flex items-center gap-1.5 text-xs px-2.5 h-8 rounded-md border transition ${
+                    contaCantieri(u.id) === 0
+                      ? 'border-warn/50 text-warn-deep bg-warn-soft/40 hover:bg-warn-soft/70'
+                      : 'border-line text-ink-soft hover:text-ink hover:border-navy-600/40'
+                  }`}
+                >
+                  <Icon name="hard-hat" size={13} />
+                  Cantieri · {contaCantieri(u.id)}
+                </button>
+              )}
 
               {u.id !== user?.id && (
                 <button
@@ -418,6 +448,152 @@ function NuovoUtenteDrawer({ open, onClose }: { open: boolean; onClose: () => vo
           </Select>
         </Field>
       </form>
+    </Drawer>
+  )
+}
+
+function AssegnaCantieriDrawer({
+  capo,
+  onClose,
+}: {
+  capo: ProfiloUtente | null
+  onClose: () => void
+}) {
+  const toast = useToast()
+  const { data: cantieri = [], isLoading } = useCantieriBrevi()
+  const { data: assegnazioni = [] } = useAssegnazioni()
+  const salvaM = useSalvaAssegnazioni()
+  const [scelti, setScelti] = useState<string[]>([])
+  const [cerca, setCerca] = useState('')
+  const [mostraChiusi, setMostraChiusi] = useState(false)
+  const [capoCaricato, setCapoCaricato] = useState<string | null>(null)
+
+  const prima = capo
+    ? assegnazioni.filter((a) => a.profile_id === capo.id).map((a) => a.cantiere_id)
+    : []
+
+  // All'apertura per un nuovo capo, parto dalle sue assegnazioni attuali.
+  if (capo && capoCaricato !== capo.id) {
+    setCapoCaricato(capo.id)
+    setScelti(prima)
+    setCerca('')
+    setMostraChiusi(false)
+  }
+
+  const chiudi = () => {
+    if (salvaM.isPending) return
+    setCapoCaricato(null)
+    onClose()
+  }
+
+  const toggle = (id: string) =>
+    setScelti((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]))
+
+  const q = cerca.trim().toLowerCase()
+  const visibili = cantieri.filter((c) => {
+    // un cantiere chiuso gia' assegnato resta sempre visibile, per poterlo togliere
+    if (c.stato === 'chiuso' && !mostraChiusi && !scelti.includes(c.id)) return false
+    if (!q) return true
+    return c.codice.toLowerCase().includes(q) || c.nome.toLowerCase().includes(q)
+  })
+
+  const salva = async () => {
+    if (!capo) return
+    try {
+      await salvaM.mutateAsync({ profileId: capo.id, prima, dopo: scelti })
+      toast.success(
+        scelti.length === 0
+          ? `${capo.nome} non ha più cantieri assegnati`
+          : `${capo.nome}: ${scelti.length} ${scelti.length === 1 ? 'cantiere assegnato' : 'cantieri assegnati'}`
+      )
+      setCapoCaricato(null)
+      onClose()
+    } catch (e) {
+      toast.error('Errore: ' + (e instanceof Error ? e.message : 'sconosciuto'))
+    }
+  }
+
+  return (
+    <Drawer
+      open={!!capo}
+      onClose={chiudi}
+      title="Cantieri assegnati"
+      subtitle={
+        capo
+          ? `${capo.nome} vede e compila rapportini, materiali e allegati solo dei cantieri selezionati`
+          : undefined
+      }
+      footer={
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm text-ink-soft">
+            {scelti.length} {scelti.length === 1 ? 'selezionato' : 'selezionati'}
+          </span>
+          <div className="flex items-center gap-3">
+            <Button variant="secondary" onClick={chiudi} disabled={salvaM.isPending}>
+              Annulla
+            </Button>
+            <Button
+              onClick={salva}
+              disabled={salvaM.isPending}
+              icon={salvaM.isPending ? 'loader-circle' : 'check'}
+            >
+              Salva
+            </Button>
+          </div>
+        </div>
+      }
+    >
+      <div className="space-y-3">
+        <Input
+          leftIcon="search"
+          placeholder="Cerca per codice o nome"
+          value={cerca}
+          onChange={(e) => setCerca(e.target.value)}
+        />
+        <label className="flex items-center gap-2 text-sm text-ink-soft select-none">
+          <input
+            type="checkbox"
+            checked={mostraChiusi}
+            onChange={(e) => setMostraChiusi(e.target.checked)}
+          />
+          Mostra anche i cantieri chiusi
+        </label>
+
+        {isLoading ? (
+          <div className="py-10 text-center">
+            <Icon name="loader-circle" size={22} className="animate-spin text-navy-600 mx-auto" />
+          </div>
+        ) : visibili.length === 0 ? (
+          <p className="text-sm text-ink-soft py-6 text-center">Nessun cantiere trovato.</p>
+        ) : (
+          <div className="border border-line rounded-lg overflow-hidden">
+            {visibili.map((c, i) => {
+              const st = STATO_CANTIERE[c.stato]
+              const on = scelti.includes(c.id)
+              return (
+                <label
+                  key={c.id}
+                  className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition ${
+                    i > 0 ? 'border-t border-line' : ''
+                  } ${on ? 'bg-navy-50/60' : 'hover:bg-canvas'}`}
+                >
+                  <input type="checkbox" checked={on} onChange={() => toggle(c.id)} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-ink truncate">{c.nome}</div>
+                    <div className="text-xs text-ink-soft font-mono">{c.codice}</div>
+                  </div>
+                  {c.manutenzione && (
+                    <Badge tone="good" icon="wrench">
+                      Manutenzione
+                    </Badge>
+                  )}
+                  <Badge tone={st.tone}>{st.label}</Badge>
+                </label>
+              )
+            })}
+          </div>
+        )}
+      </div>
     </Drawer>
   )
 }
