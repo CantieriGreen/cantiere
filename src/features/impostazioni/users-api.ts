@@ -51,25 +51,39 @@ export type NuovoUtenteInput = {
   ruolo: Ruolo
 }
 
+/** Chiama una Edge Function e restituisce un errore leggibile in italiano. */
+async function invocaFunzione(nome: string, body: Record<string, unknown>): Promise<void> {
+  const { error } = await supabase.functions.invoke(nome, { body })
+  if (error) {
+    let dettaglio = error.message
+    try {
+      const ctx = await (error as { context?: Response }).context?.json()
+      if (ctx?.error) dettaglio = ctx.error + (ctx.dettaglio ? ` — ${ctx.dettaglio}` : '')
+    } catch {
+      /* noop */
+    }
+    throw new Error(dettaglio)
+  }
+}
+
 /** Crea un utente tramite la Edge Function utenti-crea (solo admin). */
 export function useCreaUtente() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (input: NuovoUtenteInput): Promise<void> => {
-      const { error } = await supabase.functions.invoke('utenti-crea', {
-        body: input,
-      })
-      if (error) {
-        let dettaglio = error.message
-        try {
-          const ctx = await (error as { context?: Response }).context?.json()
-          if (ctx?.error) dettaglio = ctx.error + (ctx.dettaglio ? ` — ${ctx.dettaglio}` : '')
-        } catch {
-          /* noop */
-        }
-        throw new Error(dettaglio)
-      }
-    },
+    mutationFn: (input: NuovoUtenteInput) => invocaFunzione('utenti-crea', input),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['profili'] }),
+  })
+}
+
+/**
+ * Sospende o riattiva un utente tramite la Edge Function utenti-stato (solo admin):
+ * oltre al profilo, blocca o sblocca l'account in Supabase Auth.
+ */
+export function useCambiaStatoUtente() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { id: string; attivo: boolean }) =>
+      invocaFunzione('utenti-stato', input),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['profili'] }),
   })
 }

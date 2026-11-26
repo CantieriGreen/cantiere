@@ -147,7 +147,8 @@ export function RicaviList() {
       align: 'right',
       width: 90,
       render: (r) =>
-        r.origine === 'fattureincloud' ? (
+        // i ricavi li registra e modifica solo l'amministratore
+        !isAdmin ? null : r.origine === 'fattureincloud' ? (
           <span
             className="inline-flex items-center text-ink-faint"
             title="Gestita da Fatture in Cloud · si aggiorna alla sincronizzazione"
@@ -189,9 +190,11 @@ export function RicaviList() {
         actions={
           <>
             {isAdmin && <SyncFattureButton />}
-            <Button icon="plus" onClick={openNew}>
-              Nuovo ricavo
-            </Button>
+            {isAdmin && (
+              <Button icon="plus" onClick={openNew}>
+                Nuovo ricavo
+              </Button>
+            )}
           </>
         }
       />
@@ -271,11 +274,13 @@ export function RicaviList() {
             title={ricavi.length === 0 ? 'Nessun ricavo' : 'Nessun risultato'}
             description={
               ricavi.length === 0
-                ? 'Registra il primo SAL o fattura attiva.'
+                ? isAdmin
+                  ? 'Registra il primo SAL o fattura attiva.'
+                  : 'Non ci sono ancora ricavi registrati sui tuoi cantieri.'
                 : 'Nessun ricavo con questo filtro.'
             }
             action={
-              ricavi.length === 0 ? (
+              ricavi.length === 0 && isAdmin ? (
                 <Button icon="plus" onClick={openNew}>
                   Nuovo ricavo
                 </Button>
@@ -286,7 +291,7 @@ export function RicaviList() {
           <Table
             columns={cols}
             rows={rows}
-            onRowClick={openEdit}
+            onRowClick={isAdmin ? openEdit : undefined}
             footer={{
               numero_documento: (
                 <span className="text-ink-soft text-xs uppercase tracking-wide">
